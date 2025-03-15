@@ -1,5 +1,6 @@
 #include "ladder.h"
 #include <cassert>
+#include <unordered_set>
 
 void error(string word1, string word2, string msg) {
     if (word1.empty() && word2.empty()) {
@@ -40,11 +41,11 @@ bool is_adjacent(const string& word1, const string& word2) {
     return edit_distance_within(word1, word2, 1);
 }
 
-vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list) {
+vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const unordered_set<string>& word_list) {
     queue<vector<string>> ladder_queue;
     ladder_queue.push({begin_word});
 
-    set<string> visited;
+    unordered_set<string> visited;
     visited.insert(begin_word);
 
     while (!ladder_queue.empty()) {
@@ -71,7 +72,7 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
     return {};
 }
 
-void load_words(set<string>& word_list, const string& file_name) {
+void load_words(unordered_set<string>& word_list, const string& file_name) {
     ifstream file(file_name);
     if (!file) {
         error("", "", "Unable to open dictionary file.");
@@ -98,7 +99,7 @@ void print_word_ladder(const vector<string>& ladder) {
 }
 
 void verify_word_ladder() {
-    set<string> word_list;
+    unordered_set<string> word_list;
     load_words(word_list, "words.txt");
     assert(generate_word_ladder("cat", "dog", word_list).size() == 4);
     assert(generate_word_ladder("marty", "curls", word_list).size() == 6);
