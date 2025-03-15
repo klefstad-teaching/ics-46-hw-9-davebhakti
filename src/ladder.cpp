@@ -52,7 +52,7 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         string current = ladder.back();
 
         // Generate neighbors using 1-edit Levenshtein operations
-        vector<string> neighbors = get_neighbors(current, word_list);
+        vector<string> neighbors = neighbors(current, word_list);
 
         for (const string& neighbor : neighbors) {
             if (!visited.count(neighbor)) {
