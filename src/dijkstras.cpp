@@ -2,7 +2,7 @@
 
 vector<int> dijkstra_shortest_path(const Graph& G, int source, vector<int>& previous) {
     vector<int> distances(G.numVertices, INF);
-    previous.resize(G.numVertices, -1);
+    previous.assign(G.numVertices, -1);
     vector<bool> visited(G.numVertices, false);
     
     priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
@@ -45,7 +45,6 @@ vector<int> extract_shortest_path(const vector<int>& distances, const vector<int
 
 void print_path(const vector<int>& path, int total) {
     if (path.empty()) {
-        // cout << "No path exists!" << endl;
         return;
     }
 
