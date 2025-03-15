@@ -81,6 +81,8 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
             }
         }
 
+        sort(neighbors.begin(), neighbors.end());
+
         // Process neighbors
         for (const auto& neighbor : neighbors) {
             if (!visited.count(neighbor)) {
