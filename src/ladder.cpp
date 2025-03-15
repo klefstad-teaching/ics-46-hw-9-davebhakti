@@ -1,6 +1,8 @@
 #include "ladder.h"
 #include <cassert>
 
+using namespace std;
+
 void error(string word1, string word2, string msg) {
     if (word1.empty() && word2.empty()) {
         cout << "Error: " << msg << endl;
@@ -10,29 +12,20 @@ void error(string word1, string word2, string msg) {
     exit(1);
 }
 
-
 bool edit_distance_within(const string& str1, const string& str2, int d) {
     int len1 = str1.length();
     int len2 = str2.length();
-    if (abs(len1 - len2) > d) {
-        return false;
-    }
-    vector<vector<int>> dp(len1 + 1, vector<int>(len2 + 1, 0));
+    if (abs(len1 - len2) > d) return false;
 
-    for (int i = 0; i <= len1; i++) {
-        for (int j = 0; j <= len2; j++) {
-            if (i == 0) {
-                dp[i][j] = j;
-            } else if (j == 0) {
-                dp[i][j] = i;
-            } else if (str1[i - 1] == str2[j - 1]) {
-                dp[i][j] = dp[i - 1][j - 1];
-            } else {
-                dp[i][j] = 1 + min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]});
-            }
+    vector<vector<int>> dp(len1 + 1, vector<int>(len2 + 1, 0));
+    for (int i = 0; i <= len1; ++i) {
+        for (int j = 0; j <= len2; ++j) {
+            if (i == 0) dp[i][j] = j;
+            else if (j == 0) dp[i][j] = i;
+            else if (str1[i-1] == str2[j-1]) dp[i][j] = dp[i-1][j-1];
+            else dp[i][j] = 1 + min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]});
         }
     }
-
     return dp[len1][len2] <= d;
 }
 
@@ -51,36 +44,32 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         ladder_queue.pop();
         string current = ladder.back();
 
-        // Generate neighbors using 1-edit Levenshtein operations
-        vector<string> neighbors = neighbors(current, word_list);
+        vector<string> neighbors;
+        for (const string& word : word_list) {
+            if (is_adjacent(current, word)) {
+                neighbors.push_back(word);
+            }
+        }
 
         for (const string& neighbor : neighbors) {
             if (!visited.count(neighbor)) {
                 visited.insert(neighbor);
                 vector<string> new_ladder = ladder;
                 new_ladder.push_back(neighbor);
-                
-                if (neighbor == end_word) {
-                    return new_ladder;
-                }
-                
+                if (neighbor == end_word) return new_ladder;
                 ladder_queue.push(new_ladder);
             }
         }
     }
-
     return {};
 }
 
 void load_words(set<string>& word_list, const string& file_name) {
     ifstream file(file_name);
-    if (!file) {
-        error("", "", "Unable to open dictionary file.");
-    }
+    if (!file) error("", "", "Unable to open dictionary file.");
 
     string word;
     while (file >> word) {
-        // Convert word to lowercase
         transform(word.begin(), word.end(), word.begin(), ::tolower);
         word_list.insert(word);
     }
