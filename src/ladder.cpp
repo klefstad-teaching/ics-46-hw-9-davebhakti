@@ -1,6 +1,5 @@
 #include "ladder.h"
 #include <cassert>
-#include <unordered_set>
 
 void error(string word1, string word2, string msg) {
     if (word1.empty() && word2.empty()) {
@@ -41,38 +40,39 @@ bool is_adjacent(const string& word1, const string& word2) {
     return edit_distance_within(word1, word2, 1);
 }
 
-vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const unordered_set<string>& word_list) {
+vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list) {
     queue<vector<string>> ladder_queue;
     ladder_queue.push({begin_word});
-
-    unordered_set<string> visited;
+    set<string> visited;
     visited.insert(begin_word);
 
     while (!ladder_queue.empty()) {
-        vector<string> ladder = ladder_queue.front();
+        auto ladder = ladder_queue.front();
         ladder_queue.pop();
+        string current = ladder.back();
 
-        string last_word = ladder.back();
+        // Generate neighbors using 1-edit Levenshtein operations
+        vector<string> neighbors = get_neighbors(current, word_list);
 
-        for (const string& word : word_list) {
-            if (is_adjacent(last_word, word) && visited.find(word) == visited.end()) {
-                visited.insert(word);
-
+        for (const string& neighbor : neighbors) {
+            if (!visited.count(neighbor)) {
+                visited.insert(neighbor);
                 vector<string> new_ladder = ladder;
-                new_ladder.push_back(word);
-
-                if (word == end_word) {
+                new_ladder.push_back(neighbor);
+                
+                if (neighbor == end_word) {
                     return new_ladder;
                 }
-
+                
                 ladder_queue.push(new_ladder);
             }
         }
     }
+
     return {};
 }
 
-void load_words(unordered_set<string>& word_list, const string& file_name) {
+void load_words(set<string>& word_list, const string& file_name) {
     ifstream file(file_name);
     if (!file) {
         error("", "", "Unable to open dictionary file.");
@@ -99,7 +99,7 @@ void print_word_ladder(const vector<string>& ladder) {
 }
 
 void verify_word_ladder() {
-    unordered_set<string> word_list;
+    set<string> word_list;
     load_words(word_list, "words.txt");
     assert(generate_word_ladder("cat", "dog", word_list).size() == 4);
     assert(generate_word_ladder("marty", "curls", word_list).size() == 6);
