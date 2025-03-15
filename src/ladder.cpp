@@ -36,21 +36,50 @@ bool is_adjacent(const string& word1, const string& word2) {
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list) {
     queue<vector<string>> ladder_queue;
     ladder_queue.push({begin_word});
-    set<string> visited;
+    unordered_set<string> visited;  // Faster lookups
     visited.insert(begin_word);
+
+    // Convert word_list to unordered_set for O(1) lookups
+    unordered_set<string> dict(word_list.begin(), word_list.end());
 
     while (!ladder_queue.empty()) {
         auto ladder = ladder_queue.front();
         ladder_queue.pop();
         string current = ladder.back();
 
+        // Generate all possible 1-edit neighbors
         vector<string> neighbors;
-        for (const string& word : word_list) {
-            if (is_adjacent(current, word)) {
-                neighbors.push_back(word);
+
+        // Substitutions
+        for (int i = 0; i < current.size(); ++i) {
+            string temp = current;
+            for (char c = 'a'; c <= 'z'; ++c) {
+                temp[i] = c;
+                if (temp != current && dict.count(temp)) {
+                    neighbors.push_back(temp);
+                }
             }
         }
 
+        // Insertions
+        for (int i = 0; i <= current.size(); ++i) {
+            for (char c = 'a'; c <= 'z'; ++c) {
+                string temp = current.substr(0, i) + c + current.substr(i);
+                if (dict.count(temp)) {
+                    neighbors.push_back(temp);
+                }
+            }
+        }
+
+        // Deletions
+        for (int i = 0; i < current.size(); ++i) {
+            string temp = current.substr(0, i) + current.substr(i + 1);
+            if (dict.count(temp)) {
+                neighbors.push_back(temp);
+            }
+        }
+
+        // Process neighbors
         for (const string& neighbor : neighbors) {
             if (!visited.count(neighbor)) {
                 visited.insert(neighbor);
@@ -61,18 +90,8 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
             }
         }
     }
+
     return {};
-}
-
-void load_words(set<string>& word_list, const string& file_name) {
-    ifstream file(file_name);
-    if (!file) error("", "", "Unable to open dictionary file.");
-
-    string word;
-    while (file >> word) {
-        transform(word.begin(), word.end(), word.begin(), ::tolower);
-        word_list.insert(word);
-    }
 }
 
 void print_word_ladder(const vector<string>& ladder) {
