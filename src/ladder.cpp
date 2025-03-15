@@ -13,23 +13,45 @@ void error(string word1, string word2, string msg) {
     exit(1);
 }
 
+bool edit_distance_within(const string& str1, const string& str2, int d) {
+    int len1 = str1.length();
+    int len2 = str2.length();
+    if (abs(len1 - len2) > d) return false;
+
+    vector<vector<int>> dp(len1 + 1, vector<int>(len2 + 1, 0));
+    
+    for (int i = 0; i <= len1; i++) {
+        for (int j = 0; j <= len2; j++) {
+            if (i == 0) dp[i][j] = j;
+            else if (j == 0) dp[i][j] = i;
+            else if (str1[i-1] == str2[j-1]) dp[i][j] = dp[i-1][j-1];
+            else dp[i][j] = 1 + min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]});
+        }
+    }
+    return dp[len1][len2] <= d;
+}
+
+// Adjacency check (required by tests)
+bool is_adjacent(const string& word1, const string& word2) {
+    return edit_distance_within(word1, word2, 1);
+}
+
+// Optimized BFS implementation
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list) {
     queue<vector<string>> ladder_queue;
     ladder_queue.push({begin_word});
     unordered_set<string> visited;
     visited.insert(begin_word);
-
-    // Convert to unordered_set for O(1) lookups
-    const unordered_set<string> dict(word_list.begin(), word_list.end());
+    unordered_set<string> dict(word_list.begin(), word_list.end());
 
     while (!ladder_queue.empty()) {
         auto ladder = ladder_queue.front();
         ladder_queue.pop();
         string current = ladder.back();
 
-        // Generate neighbors using size_t to fix warnings
+        // Generate 1-edit neighbors directly
         vector<string> neighbors;
-
+        
         // Substitutions
         for (size_t i = 0; i < current.size(); ++i) {
             string temp = current;
@@ -70,9 +92,9 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
             }
         }
     }
-
     return {};
 }
+
 
 // Load words (matches header declaration exactly)
 void load_words(set<string>& word_list, const string& file_name) {
